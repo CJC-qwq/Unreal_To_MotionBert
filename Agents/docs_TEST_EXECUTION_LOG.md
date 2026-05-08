@@ -761,3 +761,10 @@
 - 操作：新增 `docs/assets_storage_strategy.md` 与 `deploy/assets_manifest.template.json`，为仓库的大文件资源设计正式分层方案与下载清单模板。
 - 结果：当前项目已经具备清晰的资产管理结构，可将 checkpoint、预训练权重和私有资源逐步迁移到“部署下载补齐”模式，而不是塞进 git。
 - 状态：完成
+
+### Step 46
+
+- 时间：2026-05-08 22:35:00
+- 操作：将 `scripts/deploy_windows_5070ti.ps1` 与 `scripts/deploy_windows_5090.ps1` 中的模型资源下载地址改为优先使用 `EMOCJC/motionbert_models`。
+- 结果：后续新机器部署将优先从用户自己的 Hugging Face models 仓库拉取 MotionBERT checkpoint、AlphaPose backbone 和 YOLOX detector 权重。
+- 状态：完成

@@ -322,10 +322,11 @@ $MotionReq = Join-Path $RepoRoot "deploy\requirements-motionbert-5090.txt"
 $AlphaReq = Join-Path $RepoRoot "deploy\requirements-alphapose-5090.txt"
 
 $MotionCkpt = Join-Path $RepoRoot "checkpoint\pose3d\FT_MB_lite_MB_ft_h36m_global_lite\best_epoch.bin"
-$MotionCkptUrl = "https://huggingface.co/walterzhu/MotionBERT/resolve/main/checkpoint/pose3d/FT_MB_lite_MB_ft_h36m_global_lite/best_epoch.bin"
+$MotionCkptUrl = "https://huggingface.co/EMOCJC/motionbert_models/resolve/main/checkpoint/pose3d/FT_MB_lite_MB_ft_h36m_global_lite/best_epoch.bin"
 $AlphaPoseCkpt = Join-Path $AlphaPoseDir "pretrained_models\halpe26_fast_res50_256x192.pth"
+$AlphaPoseCkptUrl = "https://huggingface.co/EMOCJC/motionbert_models/resolve/main/alphapose/pretrained_models/halpe26_fast_res50_256x192.pth"
 $YoloXCkpt = Join-Path $AlphaPoseDir "detector\yolox\data\yolox_x.pth"
-$YoloXCkptUrl = "https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_x.pth"
+$YoloXCkptUrl = "https://huggingface.co/EMOCJC/motionbert_models/resolve/main/alphapose/detector/yolox/data/yolox_x.pth"
 
 $env:MPLCONFIGDIR = Join-Path $CacheRoot "matplotlib"
 $env:TORCH_HOME = Join-Path $CacheRoot "torch"
@@ -371,7 +372,7 @@ Install-AlphaPoseExtras -CondaExe $CondaExe -EnvPath $AlphaEnv
 Write-Step "Ensure key model assets"
 Ensure-Checkpoint -Path $MotionCkpt -Url $MotionCkptUrl
 Ensure-Checkpoint -Path $YoloXCkpt -Url $YoloXCkptUrl
-Ensure-Checkpoint -Path $AlphaPoseCkpt -Url ""
+Ensure-Checkpoint -Path $AlphaPoseCkpt -Url $AlphaPoseCkptUrl
 
 Write-Step "Smoke checks"
 Verify-Env -CondaExe $CondaExe -EnvPath $MotionEnv -Command @("python", "--version")
@@ -384,5 +385,4 @@ Verify-Env -CondaExe $CondaExe -EnvPath $AlphaEnv -Command @("python", "realtime
 
 Write-Host ""
 Write-Host "[DONE] Windows 5070 Ti deployment is ready." -ForegroundColor Green
-Write-Host "[NOTE] If halpe26_fast_res50_256x192.pth is still missing, copy it from the source machine into:"
-Write-Host "       $AlphaPoseCkpt"
+Write-Host "[NOTE] Model assets now default to your Hugging Face repo: EMOCJC/motionbert_models"

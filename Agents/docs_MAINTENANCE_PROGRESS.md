@@ -1910,3 +1910,25 @@
 ### 下一步
 
 - 可继续把 `assets_manifest` 接入 `deploy_windows_5070ti.ps1` / `deploy_windows_5090.ps1`，实现按清单自动补全资源
+
+## 2026-05-08 22:35:00
+
+### 任务
+
+- 将 Windows 一键部署脚本中的模型下载来源切换为优先从 `EMOCJC/motionbert_models` 拉取
+
+### 变更
+
+- 更新 `scripts/deploy_windows_5070ti.ps1`
+- 更新 `scripts/deploy_windows_5090.ps1`
+
+### 验证
+
+- `FT_MB_lite_MB_ft_h36m_global_lite/best_epoch.bin` 已切换为从用户 Hugging Face models 仓库下载
+- `halpe26_fast_res50_256x192.pth` 已切换为从用户 Hugging Face models 仓库下载
+- `yolox_x.pth` 已切换为从用户 Hugging Face models 仓库下载
+- 未改动其余 deploy 流程、requirements、环境创建与 smoke check 逻辑
+
+### 状态
+
+- 已完成
