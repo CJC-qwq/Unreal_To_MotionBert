@@ -1,110 +1,203 @@
-# MotionBERT: A Unified Perspective on Learning Human Motion Representations
+# Unreal To MotionBERT
 
-<a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a> [![arXiv](https://img.shields.io/badge/arXiv-2210.06551-b31b1b.svg)](https://arxiv.org/abs/2210.06551) <a href="https://motionbert.github.io/"><img alt="Project" src="https://img.shields.io/badge/-Project%20Page-lightgrey?logo=Google%20Chrome&color=informational&logoColor=white"></a> <a href="https://youtu.be/slSPQ9hNLjM"><img alt="Demo" src="https://img.shields.io/badge/-Demo-ea3323?logo=youtube"></a> [![Hugging Face Models](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Models-ffab41)](https://huggingface.co/walterzhu/MotionBERT)
+This repository is a working Windows-focused MotionBERT project adapted for:
 
-[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/motionbert-unified-pretraining-for-human/monocular-3d-human-pose-estimation-on-human3)](https://paperswithcode.com/sota/monocular-3d-human-pose-estimation-on-human3?p=motionbert-unified-pretraining-for-human)
-[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/motionbert-unified-pretraining-for-human/one-shot-3d-action-recognition-on-ntu-rgbd)](https://paperswithcode.com/sota/one-shot-3d-action-recognition-on-ntu-rgbd?p=motionbert-unified-pretraining-for-human)
-[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/motionbert-unified-pretraining-for-human/3d-human-pose-estimation-on-3dpw)](https://paperswithcode.com/sota/3d-human-pose-estimation-on-3dpw?p=motionbert-unified-pretraining-for-human)
+- realtime 3D pose inference
+- Unreal Engine Live Link preview
+- local training and checkpoint testing
+- one-click environment rebuild on new machines
 
-This is the official PyTorch implementation of the paper *"[MotionBERT: A Unified Perspective on Learning Human Motion Representations](https://arxiv.org/pdf/2210.06551.pdf)"* (ICCV 2023).
+It is no longer just the upstream official MotionBERT code drop. It now contains:
 
-<img src="https://motionbert.github.io/assets/teaser.gif" alt="" style="zoom: 60%;" />
+- MotionBERT runtime and training scripts
+- AlphaPose integration
+- Unreal Engine 5 project and Live Link plugin
+- Windows deployment automation
+- project-specific docs, version snapshots, and maintenance records
 
-## Installation
+## What This Repo Is For
 
-```bash
-conda create -n motionbert python=3.7 anaconda
-conda activate motionbert
-# Please install PyTorch according to your CUDA version.
-conda install pytorch torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia
-pip install -r requirements.txt
-```
+This repo is meant to solve a practical workflow:
 
+1. run AlphaPose + MotionBERT locally on Windows
+2. send realtime 3D pose to Unreal
+3. test custom checkpoints without overwriting official ones
+4. move the project between machines by rebuilding the environment instead of copying full Python installs
 
+## Current Project Layers
 
-## Getting Started
+This project is organized into four main layers:
 
-| Task                              | Document                                                     |
-| --------------------------------- | ------------------------------------------------------------ |
-| Pretrain                          | [docs/pretrain.md](docs/pretrain.md)                                                          |
-| 3D human pose estimation          | [docs/pose3d.md](docs/pose3d.md) |
-| Skeleton-based action recognition | [docs/action.md](docs/action.md) |
-| Mesh recovery                     | [docs/mesh.md](docs/mesh.md) |
+1. `Git source layer`
+   - code, configs, docs, bat/ps1 scripts, Unreal source/config/plugin files
 
+2. `Deploy rebuild layer`
+   - Windows one-click deploy scripts recreate Miniconda envs and Python dependencies
 
+3. `Model asset layer`
+   - checkpoints and pretrained weights are restored from Hugging Face
 
-## Applications
+4. `Manual data layer`
+   - large datasets stay outside git and are handled separately
 
-### In-the-wild inference (for custom videos)
+## Main Entry Points
 
-Please refer to [docs/inference.md](docs/inference.md).
+### Realtime MotionBERT
 
-### Using MotionBERT for *human-centric* video representations
+- [run_motionbert_realtime.bat](/d:/Git/Github/MotionBERT/run_motionbert_realtime.bat)
+- [run_motionbert_realtime_global_5ep.bat](/d:/Git/Github/MotionBERT/run_motionbert_realtime_global_5ep.bat)
+- [realtime_motionbert.py](/d:/Git/Github/MotionBERT/realtime_motionbert.py)
 
-```python
-'''	    
-  x: 2D skeletons 
-    type = <class 'torch.Tensor'>
-    shape = [batch size * frames * joints(17) * channels(3)]
-    
-  MotionBERT: pretrained human motion encoder
-    type = <class 'lib.model.DSTformer.DSTformer'>
-    
-  E: encoded motion representation
-    type = <class 'torch.Tensor'>
-    shape = [batch size * frames * joints(17) * channels(512)]
-'''
-E = MotionBERT.get_representation(x)
-```
+### Offline Replay To Unreal
 
+- [run_motionbert_offline_livelink.bat](/d:/Git/Github/MotionBERT/run_motionbert_offline_livelink.bat)
+- [run_motionbert_offline_livelink_global_5ep.bat](/d:/Git/Github/MotionBERT/run_motionbert_offline_livelink_global_5ep.bat)
+- [replay_offline_to_ue.py](/d:/Git/Github/MotionBERT/replay_offline_to_ue.py)
 
+### Inference
 
-> **Hints**
->
-> 1. The model could handle different input lengths (no more than 243 frames). No need to explicitly specify the input length elsewhere.
-> 2. The model uses 17 body keypoints ([H36M format](https://github.com/JimmySuen/integral-human-pose/blob/master/pytorch_projects/common_pytorch/dataset/hm36.py#L32)). If you are using other formats, please convert them before feeding to MotionBERT. 
-> 3. Please refer to [model_action.py](lib/model/model_action.py) and [model_mesh.py](lib/model/model_mesh.py) for examples of (easily) adapting MotionBERT to different downstream tasks.
-> 4. For RGB videos, you need to extract 2D poses ([inference.md](docs/inference.md)), convert the keypoint format ([dataset_wild.py](lib/data/dataset_wild.py)), and then feed to MotionBERT ([infer_wild.py](infer_wild.py)).
->
+- [run_motionbert_pose.bat](/d:/Git/Github/MotionBERT/run_motionbert_pose.bat)
+- [run_motionbert_pose_global_5ep.bat](/d:/Git/Github/MotionBERT/run_motionbert_pose_global_5ep.bat)
+- [infer_wild.py](/d:/Git/Github/MotionBERT/infer_wild.py)
 
+### Training
 
+- [run_train_motionbert_global_5ep.bat](/d:/Git/Github/MotionBERT/run_train_motionbert_global_5ep.bat)
+- [train.py](/d:/Git/Github/MotionBERT/train.py)
+- [configs/pose3d/MB_train_h36m.yaml](/d:/Git/Github/MotionBERT/configs/pose3d/MB_train_h36m.yaml)
+- [configs/pose3d/MB_train_h36m_global_5ep.yaml](/d:/Git/Github/MotionBERT/configs/pose3d/MB_train_h36m_global_5ep.yaml)
 
-## Model Zoo
+### Mesh
 
-<img src="https://motionbert.github.io/assets/demo.gif" alt="" style="zoom: 50%;" />
+- [run_motionbert_mesh.bat](/d:/Git/Github/MotionBERT/run_motionbert_mesh.bat)
+- [infer_wild_mesh.py](/d:/Git/Github/MotionBERT/infer_wild_mesh.py)
+- [train_mesh.py](/d:/Git/Github/MotionBERT/train_mesh.py)
 
-| Model                           | Download Link                                                | Config                                                       | Performance      |
-| ------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ---------------- |
-| MotionBERT (162MB)              | [OneDrive](https://1drv.ms/f/s!AvAdh0LSjEOlgS425shtVi9e5reN?e=6UeBa2) | [pretrain/MB_pretrain.yaml](configs/pretrain/MB_pretrain.yaml) | -                |
-| MotionBERT-Lite (61MB)          | [OneDrive](https://1drv.ms/f/s!AvAdh0LSjEOlgS27Ydcbpxlkl0ng?e=rq2Btn) | [pretrain/MB_lite.yaml](configs/pretrain/MB_lite.yaml)       | -                |
-| 3D Pose (H36M-SH, scratch)      | [OneDrive](https://1drv.ms/f/s!AvAdh0LSjEOlgSvNejMQ0OHxMGZC?e=KcwBk1) | [pose3d/MB_train_h36m.yaml](configs/pose3d/MB_train_h36m.yaml) | 39.2mm (MPJPE)   |
-| 3D Pose (H36M-SH, ft)           | [OneDrive](https://1drv.ms/f/s!AvAdh0LSjEOlgSoTqtyR5Zsgi8_Z?e=rn4VJf) | [pose3d/MB_ft_h36m.yaml](configs/pose3d/MB_ft_h36m.yaml)     | 37.2mm (MPJPE)   |
-| Action Recognition (x-sub, ft)  | [OneDrive](https://1drv.ms/f/s!AvAdh0LSjEOlgTX23yT_NO7RiZz-?e=nX6w2j) | [action/MB_ft_NTU60_xsub.yaml](configs/action/MB_ft_NTU60_xsub.yaml) | 97.2% (Top1 Acc) |
-| Action Recognition (x-view, ft) | [OneDrive](https://1drv.ms/f/s!AvAdh0LSjEOlgTaNiXw2Nal-g37M?e=lSkE4T) | [action/MB_ft_NTU60_xview.yaml](configs/action/MB_ft_NTU60_xview.yaml) | 93.0% (Top1 Acc) |
-| Mesh (with 3DPW, ft)            | [OneDrive](https://1drv.ms/f/s!AvAdh0LSjEOlgTmgYNslCDWMNQi9?e=WjcB1F) | [mesh/MB_ft_pw3d.yaml](configs/mesh/MB_ft_pw3d.yaml)              | 88.1mm (MPVE)    |
+## Unreal Integration
 
-In most use cases (especially with finetuning), `MotionBERT-Lite` gives a similar performance with lower computation overhead. 
+The repository includes a UE project and a custom Live Link plugin:
 
+- [Unreal/MotionBERT_UE/MotionBERT_UE.uproject](/d:/Git/Github/MotionBERT/Unreal/MotionBERT_UE/MotionBERT_UE.uproject)
+- [Unreal/MotionBERT_UE/Plugins/MotionBERTLiveLink](/d:/Git/Github/MotionBERT/Unreal/MotionBERT_UE/Plugins/MotionBERTLiveLink)
 
+Important docs:
 
-## TODO
+- [docs/ue_livelink_integration.md](/d:/Git/Github/MotionBERT/docs/ue_livelink_integration.md)
+- [docs/realtime_perf_ceiling_assessment.md](/d:/Git/Github/MotionBERT/docs/realtime_perf_ceiling_assessment.md)
 
-- [x] Scripts and docs for pretraining
+Current UE path supports:
 
-- [x] Demo for custom videos
+- UDP-based Live Link source
+- MotionBERT 17-joint stream
+- native preview character/game mode
+- direct Manny preview workflow
 
+## One-Click Deployment
 
+This repo is designed so you do not need to put Python environments into git.
 
-## Citation
+### Windows 5070 Ti
 
-If you find our work useful for your project, please consider citing the paper:
+- [deploy_windows_5070ti.bat](/d:/Git/Github/MotionBERT/deploy_windows_5070ti.bat)
+- [scripts/deploy_windows_5070ti.ps1](/d:/Git/Github/MotionBERT/scripts/deploy_windows_5070ti.ps1)
+- [docs/deploy_windows_5070ti.md](/d:/Git/Github/MotionBERT/docs/deploy_windows_5070ti.md)
 
-```bibtex
-@inproceedings{motionbert2022,
-  title     =   {MotionBERT: A Unified Perspective on Learning Human Motion Representations}, 
-  author    =   {Zhu, Wentao and Ma, Xiaoxuan and Liu, Zhaoyang and Liu, Libin and Wu, Wayne and Wang, Yizhou},
-  booktitle =   {Proceedings of the IEEE/CVF International Conference on Computer Vision},
-  year      =   {2023},
-}
-```
+### Windows 5090
 
+- [deploy_windows_5090.bat](/d:/Git/Github/MotionBERT/deploy_windows_5090.bat)
+- [scripts/deploy_windows_5090.ps1](/d:/Git/Github/MotionBERT/scripts/deploy_windows_5090.ps1)
+- [docs/deploy_windows_5090.md](/d:/Git/Github/MotionBERT/docs/deploy_windows_5090.md)
+
+These deploy scripts rebuild:
+
+- `.local/miniconda3`
+- `motionbert` conda env
+- `alphapose` conda env
+- PyTorch 2.11.0 + cu128 stack
+- required Python dependencies
+
+They also now default to downloading model assets from:
+
+- `EMOCJC/motionbert_models`
+
+## Model And Data Strategy
+
+This repo now follows a split strategy:
+
+### In Git
+
+- source code
+- configs
+- deployment scripts
+- docs
+- Unreal source/config/plugin files
+
+### In Hugging Face Models
+
+- MotionBERT checkpoints
+- AlphaPose pretrained weights
+- detector weights
+
+Current model repo:
+
+- `EMOCJC/motionbert_models`
+
+### Outside Git
+
+- full datasets
+- local caches
+- outputs
+- conda envs
+
+Related docs:
+
+- [docs/assets_storage_strategy.md](/d:/Git/Github/MotionBERT/docs/assets_storage_strategy.md)
+- [deploy/assets_manifest.template.json](/d:/Git/Github/MotionBERT/deploy/assets_manifest.template.json)
+
+## Repository Notes
+
+### Version Snapshots
+
+- [versions/realtime/README.md](/d:/Git/Github/MotionBERT/versions/realtime/README.md)
+
+This folder keeps important realtime script snapshots so regression and rollback are easier.
+
+### Workspace Bundle
+
+- [create_workspace_bundle.bat](/d:/Git/Github/MotionBERT/create_workspace_bundle.bat)
+- [scripts/create_workspace_bundle.ps1](/d:/Git/Github/MotionBERT/scripts/create_workspace_bundle.ps1)
+- [docs/workspace_bundle.md](/d:/Git/Github/MotionBERT/docs/workspace_bundle.md)
+
+This is for moving the workspace without copying the whole Python environment.
+
+### Maintenance Records
+
+- [Agents/docs_MAINTENANCE_PROGRESS.md](/d:/Git/Github/MotionBERT/Agents/docs_MAINTENANCE_PROGRESS.md)
+- [Agents/docs_TEST_EXECUTION_LOG.md](/d:/Git/Github/MotionBERT/Agents/docs_TEST_EXECUTION_LOG.md)
+- [Agents/docs_REQUIREMENT_WORKFLOW.md](/d:/Git/Github/MotionBERT/Agents/docs_REQUIREMENT_WORKFLOW.md)
+
+## Suggested Setup Flow
+
+### New machine
+
+1. Clone this repo.
+2. Run `deploy_windows_5070ti.bat` or `deploy_windows_5090.bat`.
+3. Let the deploy script restore model assets from `EMOCJC/motionbert_models`.
+4. Manually place any private dataset files if needed.
+5. Run the required bat entry point.
+
+### Realtime to Unreal
+
+1. Open the UE project.
+2. Enable and use the MotionBERT Live Link source.
+3. Start a realtime MotionBERT bat entry.
+4. Preview the Manny-based character in UE.
+
+## Upstream Credit
+
+This project is based on the official MotionBERT paper and codebase:
+
+- Paper: <https://arxiv.org/abs/2210.06551>
+- Upstream repo: <https://github.com/Walter0807/MotionBERT>
+
+This repository keeps `upstream` pointing to the official MotionBERT repo and `origin` pointing to the project-owned repo.

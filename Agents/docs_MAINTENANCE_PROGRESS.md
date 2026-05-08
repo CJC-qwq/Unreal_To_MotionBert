@@ -1932,3 +1932,27 @@
 ### 状态
 
 - 已完成
+
+## 2026-05-08 22:52:00
+
+### 任务
+
+- 将仓库根 README 从官方 MotionBERT 论文仓口径更新为当前工程化项目说明
+
+### 变更
+
+- 重写 `README.md`
+
+### 验证
+
+- README 已改为描述当前仓库真实用途：
+  - Windows 一键部署
+  - Unreal Live Link 集成
+  - realtime / offline / training 入口
+  - Hugging Face 模型仓策略
+  - 数据与环境分层管理
+- 保留了对官方 MotionBERT 论文与上游仓库的致谢说明
+
+### 状态
+
+- 已完成

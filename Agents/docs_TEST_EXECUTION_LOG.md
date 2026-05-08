@@ -768,3 +768,10 @@
 - 操作：将 `scripts/deploy_windows_5070ti.ps1` 与 `scripts/deploy_windows_5090.ps1` 中的模型资源下载地址改为优先使用 `EMOCJC/motionbert_models`。
 - 结果：后续新机器部署将优先从用户自己的 Hugging Face models 仓库拉取 MotionBERT checkpoint、AlphaPose backbone 和 YOLOX detector 权重。
 - 状态：完成
+
+### Step 47
+
+- 时间：2026-05-08 22:52:00
+- 操作：重写仓库根 `README.md`，将其从官方 MotionBERT 论文仓说明改为当前项目的工程化说明文档。
+- 结果：README 现在准确覆盖了 Unreal 集成、Windows deploy、HF 模型仓、运行入口与资源管理策略，更适合当前项目对外展示与后续维护。
+- 状态：完成
