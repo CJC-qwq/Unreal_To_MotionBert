@@ -3,7 +3,15 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-data
+data/
+checkpoint/
+outputs/
+demo_assets/
+.local/
+.cache/
+alpha_cache/
+alpha_tmp/
+.external/
 /vis*
 !lib/data
 .DS_Store
@@ -120,6 +128,39 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Local tooling / workspace
+deploy_run.log
+deploy_run_5070ti.log
+*.zip
+*.7z
+*.rar
+
+# Unreal generated files
+Unreal/MotionBERT_UE/.vs/
+Unreal/MotionBERT_UE/Binaries/
+Unreal/MotionBERT_UE/DerivedDataCache/
+Unreal/MotionBERT_UE/Intermediate/
+Unreal/MotionBERT_UE/Saved/
+Unreal/MotionBERT_UE/*.sln
+Unreal/MotionBERT_UE/Plugins/*/Binaries/
+Unreal/MotionBERT_UE/Plugins/*/Intermediate/
+
+# Keep Unreal source/config/plugin project files
+!Unreal/
+!Unreal/set_mocap_preview_map.py
+!Unreal/MotionBERT_UE/
+!Unreal/MotionBERT_UE/Config/
+!Unreal/MotionBERT_UE/Config/**
+!Unreal/MotionBERT_UE/Content/
+!Unreal/MotionBERT_UE/Content/**
+!Unreal/MotionBERT_UE/Plugins/
+!Unreal/MotionBERT_UE/Plugins/**/*.uplugin
+!Unreal/MotionBERT_UE/Plugins/**/Source/
+!Unreal/MotionBERT_UE/Plugins/**/Source/**
+!Unreal/MotionBERT_UE/Source/
+!Unreal/MotionBERT_UE/Source/**
+!Unreal/MotionBERT_UE/*.uproject
 
 # Spyder project settings
 .spyderproject

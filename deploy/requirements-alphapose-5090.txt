@@ -1,0 +1,17 @@
+numpy==1.26.4
+opencv-python==4.11.0.86
+matplotlib==3.10.9
+scipy==1.15.3
+easydict==1.13
+cython==3.2.4
+cython-bbox==0.1.5
+gdown==6.0.0
+halpecocotools==0.0.1
+pycocotools==2.0.11
+timm==0.1.20
+tensorboardx==2.6.5
+pandas==2.3.3
+natsort==8.4.0
+munkres==1.1.4
+tqdm==4.67.3
+PyYAML==6.0.3

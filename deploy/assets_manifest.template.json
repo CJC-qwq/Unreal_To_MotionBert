@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "updated_at": "2026-05-08",
+  "repo_profile": "motionbert-windows",
+  "download_roots": {
+    "public_models": "https://your-public-model-host.example.com/motionbert/",
+    "private_assets": "https://your-private-asset-host.example.com/motionbert/"
+  },
+  "assets": [
+    {
+      "id": "motionbert_ft_mb_lite_h36m_global",
+      "category": "public-model",
+      "required": true,
+      "target_path": "checkpoint/pose3d/FT_MB_lite_MB_ft_h36m_global_lite/best_epoch.bin",
+      "source_type": "direct-url",
+      "url": "https://huggingface.co/your-org/your-repo/resolve/main/checkpoint/pose3d/FT_MB_lite_MB_ft_h36m_global_lite/best_epoch.bin",
+      "notes": "Official or mirrored public MotionBERT checkpoint."
+    },
+    {
+      "id": "alphapose_yolox_x",
+      "category": "public-model",
+      "required": true,
+      "target_path": ".external/AlphaPose/detector/yolox/data/yolox_x.pth",
+      "source_type": "direct-url",
+      "url": "https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_x.pth",
+      "notes": "Public detector checkpoint."
+    },
+    {
+      "id": "alphapose_halpe26_fast_res50",
+      "category": "public-or-private-model",
+      "required": true,
+      "target_path": ".external/AlphaPose/pretrained_models/halpe26_fast_res50_256x192.pth",
+      "source_type": "manual-or-direct-url",
+      "url": "",
+      "notes": "Fill a direct URL if you host it yourself; otherwise keep manual copy."
+    },
+    {
+      "id": "motionbert_global_5ep_custom",
+      "category": "private-model",
+      "required": false,
+      "target_path": "checkpoint/pose3d/MB_train_h36m_global_5ep/best_epoch.bin",
+      "source_type": "direct-url",
+      "url": "https://your-private-asset-host.example.com/motionbert/checkpoint/pose3d/MB_train_h36m_global_5ep/best_epoch.bin",
+      "notes": "Your own trained checkpoint."
+    },
+    {
+      "id": "inference_demo_assets",
+      "category": "public-resource-pack",
+      "required": false,
+      "target_path": "demo_assets/",
+      "source_type": "zip-url",
+      "url": "https://your-public-model-host.example.com/motionbert/demo_assets.zip",
+      "notes": "Optional demo bundle; deploy script should download and extract."
+    },
+    {
+      "id": "licensed_dataset_stub",
+      "category": "licensed-dataset",
+      "required": false,
+      "target_path": "data/motion3d/",
+      "source_type": "manual-only",
+      "url": "",
+      "notes": "Keep manual-only for assets that require registration or license acceptance."
+    }
+  ]
+}

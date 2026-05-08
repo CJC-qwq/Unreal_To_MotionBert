@@ -55,103 +55,110 @@ def solve_scale(x, y):
     print('Pose matching error = %.2f mm.' % best_res)
     return best_scale
 
-opts = parse_args()
-args = get_config(opts.config)
+def main():
+    opts = parse_args()
+    args = get_config(opts.config)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# root_rel
-# args.rootrel = True
+    # root_rel
+    # args.rootrel = True
 
-smpl = SMPL(args.data_root, batch_size=1).cuda()
-J_regressor = smpl.J_regressor_h36m
+    smpl = SMPL(args.data_root, batch_size=1).to(device)
+    J_regressor = smpl.J_regressor_h36m
 
-end = time.time()
-model_backbone = load_backbone(args)
-print(f'init backbone time: {(time.time()-end):02f}s')
-end = time.time()
-model = MeshRegressor(args, backbone=model_backbone, dim_rep=args.dim_rep, hidden_dim=args.hidden_dim, dropout_ratio=args.dropout)
-print(f'init whole model time: {(time.time()-end):02f}s')
+    end = time.time()
+    model_backbone = load_backbone(args)
+    print(f'init backbone time: {(time.time()-end):02f}s')
+    end = time.time()
+    model = MeshRegressor(args, backbone=model_backbone, dim_rep=args.dim_rep, hidden_dim=args.hidden_dim, dropout_ratio=args.dropout)
+    print(f'init whole model time: {(time.time()-end):02f}s')
 
-if torch.cuda.is_available():
-    model = nn.DataParallel(model)
-    model = model.cuda()
+    if torch.cuda.is_available():
+        model = nn.DataParallel(model)
+    model = model.to(device)
 
-chk_filename = opts.evaluate if opts.evaluate else opts.resume
-print('Loading checkpoint', chk_filename)
-checkpoint = torch.load(chk_filename, map_location=lambda storage, loc: storage)
-model.load_state_dict(checkpoint['model'], strict=True)
-model.eval()
+    chk_filename = opts.evaluate if opts.evaluate else opts.resume
+    print('Loading checkpoint', chk_filename)
+    checkpoint = torch.load(chk_filename, map_location='cpu', weights_only=False)
+    model.load_state_dict(checkpoint['model'], strict=True)
+    model.eval()
 
-testloader_params = {
-        'batch_size': 1,
-        'shuffle': False,
-        'num_workers': 8,
-        'pin_memory': True,
-        'prefetch_factor': 4,
-        'persistent_workers': True,
-        'drop_last': False
-}
+    num_workers = 0 if os.name == 'nt' else 8
+    testloader_params = {
+            'batch_size': 1,
+            'shuffle': False,
+            'num_workers': num_workers,
+            'pin_memory': torch.cuda.is_available(),
+            'drop_last': False
+    }
+    if num_workers > 0:
+        testloader_params['prefetch_factor'] = 4
+        testloader_params['persistent_workers'] = True
 
-vid = imageio.get_reader(opts.vid_path,  'ffmpeg')
-fps_in = vid.get_meta_data()['fps']
-vid_size = vid.get_meta_data()['size']
-os.makedirs(opts.out_path, exist_ok=True)
+    vid = imageio.get_reader(opts.vid_path,  'ffmpeg')
+    fps_in = vid.get_meta_data()['fps']
+    vid_size = vid.get_meta_data()['size']
+    os.makedirs(opts.out_path, exist_ok=True)
 
-if opts.pixel:
-    # Keep relative scale with pixel coornidates
-    wild_dataset = WildDetDataset(opts.json_path, clip_len=opts.clip_len, vid_size=vid_size, scale_range=None, focus=opts.focus)
-else:
-    # Scale to [-1,1]
-    wild_dataset = WildDetDataset(opts.json_path, clip_len=opts.clip_len, scale_range=[1,1], focus=opts.focus)
+    if opts.pixel:
+        # Keep relative scale with pixel coornidates
+        wild_dataset = WildDetDataset(opts.json_path, clip_len=opts.clip_len, vid_size=vid_size, scale_range=None, focus=opts.focus)
+    else:
+        # Scale to [-1,1]
+        wild_dataset = WildDetDataset(opts.json_path, clip_len=opts.clip_len, scale_range=[1,1], focus=opts.focus)
 
-test_loader = DataLoader(wild_dataset, **testloader_params)
+    test_loader = DataLoader(wild_dataset, **testloader_params)
 
-verts_all = []
-reg3d_all = []
-with torch.no_grad():
-    for batch_input in tqdm(test_loader):
-        batch_size, clip_frames = batch_input.shape[:2]
-        if torch.cuda.is_available():
-            batch_input = batch_input.cuda().float()
-        output = model(batch_input)   
-        batch_input_flip = flip_data(batch_input)
-        output_flip = model(batch_input_flip)
-        output_flip_pose = output_flip[0]['theta'][:, :, :72]
-        output_flip_shape = output_flip[0]['theta'][:, :, 72:]
-        output_flip_pose = flip_thetas_batch(output_flip_pose)
-        output_flip_pose = output_flip_pose.reshape(-1, 72)
-        output_flip_shape = output_flip_shape.reshape(-1, 10)
-        output_flip_smpl = smpl(
-            betas=output_flip_shape,
-            body_pose=output_flip_pose[:, 3:],
-            global_orient=output_flip_pose[:, :3],
-            pose2rot=True
-        )
-        output_flip_verts = output_flip_smpl.vertices.detach()
-        J_regressor_batch = J_regressor[None, :].expand(output_flip_verts.shape[0], -1, -1).to(output_flip_verts.device)
-        output_flip_kp3d = torch.matmul(J_regressor_batch, output_flip_verts)  # (NT,17,3) 
-        output_flip_back = [{
-            'verts': output_flip_verts.reshape(batch_size, clip_frames, -1, 3) * 1000.0,
-            'kp_3d': output_flip_kp3d.reshape(batch_size, clip_frames, -1, 3),
-        }]
-        output_final = [{}]
-        for k, v in output_flip_back[0].items():
-            output_final[0][k] = (output[0][k] + output_flip_back[0][k]) / 2.0
-        output = output_final
-        verts_all.append(output[0]['verts'].cpu().numpy())
-        reg3d_all.append(output[0]['kp_3d'].cpu().numpy())
+    verts_all = []
+    reg3d_all = []
+    with torch.no_grad():
+        for batch_input in tqdm(test_loader):
+            batch_size, clip_frames = batch_input.shape[:2]
+            batch_input = batch_input.to(device).float()
+            output = model(batch_input)
+            batch_input_flip = flip_data(batch_input)
+            output_flip = model(batch_input_flip)
+            output_flip_pose = output_flip[0]['theta'][:, :, :72]
+            output_flip_shape = output_flip[0]['theta'][:, :, 72:]
+            output_flip_pose = flip_thetas_batch(output_flip_pose)
+            output_flip_pose = output_flip_pose.reshape(-1, 72)
+            output_flip_shape = output_flip_shape.reshape(-1, 10)
+            output_flip_smpl = smpl(
+                betas=output_flip_shape,
+                body_pose=output_flip_pose[:, 3:],
+                global_orient=output_flip_pose[:, :3],
+                pose2rot=True
+            )
+            output_flip_verts = output_flip_smpl.vertices.detach()
+            J_regressor_batch = J_regressor[None, :].expand(output_flip_verts.shape[0], -1, -1).to(output_flip_verts.device)
+            output_flip_kp3d = torch.matmul(J_regressor_batch, output_flip_verts)  # (NT,17,3)
+            output_flip_back = [{
+                'verts': output_flip_verts.reshape(batch_size, clip_frames, -1, 3) * 1000.0,
+                'kp_3d': output_flip_kp3d.reshape(batch_size, clip_frames, -1, 3),
+            }]
+            output_final = [{}]
+            for k, v in output_flip_back[0].items():
+                output_final[0][k] = (output[0][k] + output_flip_back[0][k]) / 2.0
+            output = output_final
+            verts_all.append(output[0]['verts'].cpu().numpy())
+            reg3d_all.append(output[0]['kp_3d'].cpu().numpy())
 
-verts_all = np.hstack(verts_all)
-verts_all = np.concatenate(verts_all)
-reg3d_all = np.hstack(reg3d_all)
-reg3d_all = np.concatenate(reg3d_all)
+    verts_all = np.hstack(verts_all)
+    verts_all = np.concatenate(verts_all)
+    reg3d_all = np.hstack(reg3d_all)
+    reg3d_all = np.concatenate(reg3d_all)
 
-if opts.ref_3d_motion_path:
-    ref_pose = np.load(opts.ref_3d_motion_path)
-    x = ref_pose - ref_pose[:, :1]
-    y = reg3d_all - reg3d_all[:, :1]
-    scale = solve_scale(x, y)
-    root_cam = ref_pose[:, :1] * scale
-    verts_all = verts_all - reg3d_all[:,:1] + root_cam
+    if opts.ref_3d_motion_path:
+        ref_pose = np.load(opts.ref_3d_motion_path)
+        x = ref_pose - ref_pose[:, :1]
+        y = reg3d_all - reg3d_all[:, :1]
+        scale = solve_scale(x, y)
+        root_cam = ref_pose[:, :1] * scale
+        verts_all = verts_all - reg3d_all[:, :1] + root_cam
 
-render_and_save(verts_all, osp.join(opts.out_path, 'mesh.mp4'), keep_imgs=False, fps=fps_in, draw_face=True)
+    render_and_save(verts_all, osp.join(opts.out_path, 'mesh.mp4'), keep_imgs=False, fps=fps_in, draw_face=True)
+
+
+if __name__ == '__main__':
+    main()
 

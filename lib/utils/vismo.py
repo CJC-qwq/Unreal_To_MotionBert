@@ -8,6 +8,13 @@ import io
 from tqdm import tqdm
 from PIL import Image
 from lib.utils.tools import ensure_dir
+
+if 'MPLCONFIGDIR' not in os.environ:
+    os.environ['MPLCONFIGDIR'] = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), '..', '..', '.cache', 'matplotlib')
+    )
+    os.makedirs(os.environ['MPLCONFIGDIR'], exist_ok=True)
+
 import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D

@@ -261,13 +261,13 @@ def train_with_config(args, opts):
         if opts.resume or opts.evaluate:
             chk_filename = opts.evaluate if opts.evaluate else opts.resume
             print('Loading checkpoint', chk_filename)
-            checkpoint = torch.load(chk_filename, map_location=lambda storage, loc: storage)
+            checkpoint = torch.load(chk_filename, map_location=lambda storage, loc: storage, weights_only=False)
             model_backbone.load_state_dict(checkpoint['model_pos'], strict=True)
             model_pos = model_backbone
         else:
             chk_filename = os.path.join(opts.pretrained, opts.selection)
             print('Loading checkpoint', chk_filename)
-            checkpoint = torch.load(chk_filename, map_location=lambda storage, loc: storage)
+            checkpoint = torch.load(chk_filename, map_location=lambda storage, loc: storage, weights_only=False)
             model_backbone.load_state_dict(checkpoint['model_pos'], strict=True)
             model_pos = model_backbone            
     else:
@@ -277,7 +277,7 @@ def train_with_config(args, opts):
         if opts.resume or opts.evaluate:
             chk_filename = opts.evaluate if opts.evaluate else opts.resume
             print('Loading checkpoint', chk_filename)
-            checkpoint = torch.load(chk_filename, map_location=lambda storage, loc: storage)
+            checkpoint = torch.load(chk_filename, map_location=lambda storage, loc: storage, weights_only=False)
             model_backbone.load_state_dict(checkpoint['model_pos'], strict=True)
         model_pos = model_backbone
         
